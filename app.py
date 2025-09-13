@@ -1,4 +1,5 @@
 import streamlit as st
+import request
 
 st.set_page_config(page_title="Fitness Calculator", page_icon="🔥")
 
@@ -7,7 +8,13 @@ st.write("Use the tabs below to switch between calculators.")
 
 # Tabs
 # tab1, tab2 = st.tabs(["BMR Calculator", "Weight Loss"])
-tab1, tab2, tab3 = st.tabs(["BMR Calculator", "Weight Loss", "Fat Loss Planner"])
+# tab1, tab2, tab3 = st.tabs(["BMR Calculator", "Weight Loss", "Fat Loss Planner"])
+tab1, tab2, tab3, tab4 = st.tabs([
+    "📊 BMR Calculator",
+    "🎯 Weight Loss Planner",
+    "🔥 Fat Loss Planner",
+    "🥗 Food Calorie Lookup"
+])
 
 # ----------------------------
 # TAB 1: BMR Calculator
@@ -170,3 +177,39 @@ with tab3:
             ax.set_ylabel("Calories/day")
             ax.set_title("Required Calorie Deficit")
             st.pyplot(fig)
+
+
+
+# ----------------------------
+# TAB 4: Food Calorie Lookup
+# ----------------------------
+with tab4:
+    st.header("Food Calorie Lookup (USDA API)")
+
+    food_options = ["Apple", "Banana", "Chicken breast", "Rice, white", "Broccoli"]
+    selected_food = st.selectbox("Choose an ingredient", food_options, key="food_choice")
+    grams = st.number_input("Enter amount (grams)", min_value=1, step=1, key="food_weight")
+
+    if st.button("Get Calories"):
+        api_key = "pzScBHFYwdQzrtod4LLvcEDo2CtbEUcbZnp"
+        url = f"https://api.nal.usda.gov/fdc/v1/foods/search?query={selected_food}&pageSize=1&api_key={api_key}"
+
+        try:
+            response = requests.get(url)
+            data = response.json()
+            food_data = data["foods"][0]
+
+            # Calories per 100g
+            calories_per_100g = next(
+                (nutr["value"] for nutr in food_data["foodNutrients"] if nutr["nutrientName"] == "Energy"), None
+            )
+
+            if calories_per_100g:
+                total_calories = (calories_per_100g * grams) / 100
+                st.success(f"{grams} g of {selected_food} ≈ **{total_calories:.1f} calories**")
+            else:
+                st.error("Calories not found for this food.")
+
+        except Exception as e:
+            st.error(f"Error fetching data: {e}")
+
