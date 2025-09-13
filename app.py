@@ -6,7 +6,7 @@ st.title("Fitness Calculator")
 st.write("Use the tabs below to switch between calculators.")
 
 # Tabs
-tab1, tab2 = st.tabs(["BMR Calculator", "Weight Loss Planner"])
+tab1, tab2 = st.tabs(["BMR Calculator", "Weight Loss"])
 
 # ----------------------------
 # TAB 1: BMR Calculator
@@ -23,11 +23,11 @@ with tab1:
     activity = st.selectbox(
         "Activity Level",
         [
-            "Sedentary (little/no exercise)",
-            "Lightly Active (1-3 days/week)",
-            "Moderately Active (3-5 days/week)",
-            "Very Active (6-7 days/week)",
-            "Extra Active (physical job or 2x training)"
+            "Sedentary (little or no exercise)",
+            "Lightly Active (exercise 1–3 days/week)",
+            "Moderately Active (exercise 3–5 days/week)",
+            "Very Active (exercise 6–7 days/week)",
+            "Extra Active (hard physical job or 2x training)"
         ],
         key="bmr_activity"
     )
@@ -44,17 +44,18 @@ with tab1:
 
     # Activity multipliers
     multipliers = {
-        "Sedentary (little/no exercise)": 1.2,
-        "Lightly Active (1-3 days/week)": 1.375,
-        "Moderately Active (3-5 days/week)": 1.55,
-        "Very Active (6-7 days/week)": 1.725,
-        "Extra Active (physical job or 2x training)": 1.9,
+        "Sedentary (little or no exercise)": 1.2,
+        "Lightly Active (exercise 1–3 days/week)": 1.375,
+        "Moderately Active (exercise 3–5 days/week)": 1.55,
+        "Very Active (exercise 6–7 days/week)": 1.725,
+        "Extra Active (hard physical job or 2x training)": 1.9,
     }
     tdee = bmr * multipliers[activity]
 
-    if st.button("Calculate BMR"):
-        st.success(f"Your BMR is **{bmr:.0f} calories/day**")
-        st.info(f"Your TDEE (with activity) is **{tdee:.0f} calories/day**")
+    if st.button("Calculate BMR & TDEE"):
+        st.success(f"**Basal Metabolic Rate (BMR):** {bmr:.0f} calories/day")
+        st.info(f"**Total Daily Energy Expenditure (TDEE):** {tdee:.0f} calories/day \n\n"
+                f"TDEE is the number of calories you burn per day including activity.")
 
 # ----------------------------
 # TAB 2: Weight Loss Planner
