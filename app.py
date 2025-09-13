@@ -190,7 +190,8 @@ with tab4:
     grams = st.number_input("Enter amount (grams)", min_value=1, step=1, key="food_weight")
 
     if st.button("Get Calories"):
-        api_key = "pzScBHFYwdQzrtod4LLvcEDo2CtbEUcbZnp"
+        import streamlit as st
+        api_key = st.secrets["USDA_API_KEY"]
         url = f"https://api.nal.usda.gov/fdc/v1/foods/search?query={food_query}&pageSize=5&api_key={api_key}"
 
         try:
