@@ -126,3 +126,46 @@ with tab2:
                 st.warning("⚠️ This is very low. Extend your timeline for a safer plan.")
         else:
             st.info("Your target weight is not less than your current weight.")
+
+
+# ----------------------------
+# TAB 3: Fat Loss Planner
+# ----------------------------
+with tab3:
+    st.header("Fat Loss Planner (3500 Calorie Rule)")
+
+    pounds_to_lose = st.number_input("Target Fat Loss (lbs)", min_value=1.0, step=0.5, key="fatloss_pounds")
+
+    option = st.radio("Plan by:", ["Daily Calorie Deficit", "Number of Days"], key="fatloss_option")
+
+    if option == "Daily Calorie Deficit":
+        daily_deficit = st.number_input("Daily Calorie Deficit (calories/day)", min_value=100, step=50, key="fatloss_deficit")
+        total_deficit = pounds_to_lose * 3500
+        days_needed = total_deficit / daily_deficit if daily_deficit > 0 else 0
+
+        if st.button("Calculate Fat Loss (by deficit)"):
+            st.success(f"To lose **{pounds_to_lose:.1f} lbs**, "
+                       f"with a **{daily_deficit:.0f} calorie/day deficit**, "
+                       f"it will take about **{days_needed:.0f} days**.")
+
+            # Visualization: progress bar timeline
+            st.subheader("Timeline Visualization")
+            st.progress(min(1.0, daily_deficit / 1000))  # shows progress relative to 1000 deficit/day
+
+    else:  # by number of days
+        days = st.number_input("Number of Days", min_value=1, step=1, key="fatloss_days")
+        total_deficit = pounds_to_lose * 3500
+        daily_deficit = total_deficit / days if days > 0 else 0
+
+        if st.button("Calculate Fat Loss (by days)"):
+            st.success(f"To lose **{pounds_to_lose:.1f} lbs** in **{days:.0f} days**, "
+                       f"you need a **{daily_deficit:.0f} calorie/day deficit**.")
+
+            # Visualization: bar chart
+            import matplotlib.pyplot as plt
+
+            fig, ax = plt.subplots()
+            ax.bar(["Daily Deficit Needed"], [daily_deficit])
+            ax.set_ylabel("Calories/day")
+            ax.set_title("Required Calorie Deficit")
+            st.pyplot(fig)
