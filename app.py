@@ -1,5 +1,5 @@
 import streamlit as st
-import request
+import requests
 
 st.set_page_config(page_title="Fitness Calculator", page_icon="🔥")
 
