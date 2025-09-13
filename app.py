@@ -186,30 +186,36 @@ with tab3:
 with tab4:
     st.header("Food Calorie Lookup (USDA API)")
 
-    food_options = ["Apple", "Banana", "Chicken breast", "Rice, white", "Broccoli"]
-    selected_food = st.selectbox("Choose an ingredient", food_options, key="food_choice")
+    food_query = st.text_input("Search for a food (e.g., apple, chicken, rice)", key="food_query")
     grams = st.number_input("Enter amount (grams)", min_value=1, step=1, key="food_weight")
 
     if st.button("Get Calories"):
         api_key = "pzScBHFYwdQzrtod4LLvcEDo2CtbEUcbZnp"
-        url = f"https://api.nal.usda.gov/fdc/v1/foods/search?query={selected_food}&pageSize=1&api_key={api_key}"
+        url = f"https://api.nal.usda.gov/fdc/v1/foods/search?query={food_query}&pageSize=5&api_key={api_key}"
 
         try:
             response = requests.get(url)
             data = response.json()
-            food_data = data["foods"][0]
 
-            # Calories per 100g
-            calories_per_100g = next(
-                (nutr["value"] for nutr in food_data["foodNutrients"] if nutr["nutrientName"] == "Energy"), None
-            )
-
-            if calories_per_100g:
-                total_calories = (calories_per_100g * grams) / 100
-                st.success(f"{grams} g of {selected_food} ≈ **{total_calories:.1f} calories**")
+            if "foods" not in data or len(data["foods"]) == 0:
+                st.error("No results found. Try another food.")
             else:
-                st.error("Calories not found for this food.")
+                # Show top 5 matches as a selectbox
+                food_names = [f["description"] for f in data["foods"]]
+                selected_food = st.selectbox("Select a match", food_names)
 
+                # Find selected food's nutrients
+                chosen = next(f for f in data["foods"] if f["description"] == selected_food)
+                nutrients = {n["nutrientName"]: n["value"] for n in chosen["foodNutrients"]}
+
+                # Calories per 100g
+                calories_per_100g = nutrients.get("Energy", None)
+
+                if calories_per_100g:
+                    total_calories = (calories_per_100g * grams) / 100
+                    st.success(f"{grams} g of {selected_food} ≈ **{total_calories:.1f} calories**")
+                else:
+                    st.error("Calories not found for this food.")
         except Exception as e:
             st.error(f"Error fetching data: {e}")
 
