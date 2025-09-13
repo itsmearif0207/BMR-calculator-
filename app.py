@@ -6,7 +6,8 @@ st.title("Fitness Calculator")
 st.write("Use the tabs below to switch between calculators.")
 
 # Tabs
-tab1, tab2 = st.tabs(["BMR Calculator", "Weight Loss"])
+# tab1, tab2 = st.tabs(["BMR Calculator", "Weight Loss"])
+tab1, tab2, tab3 = st.tabs(["BMR Calculator", "Weight Loss", "Fat Loss Planner"])
 
 # ----------------------------
 # TAB 1: BMR Calculator
