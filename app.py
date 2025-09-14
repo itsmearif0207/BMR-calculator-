@@ -179,20 +179,17 @@ with tab3:
             st.pyplot(fig)
 
 
-
 # ----------------------------
 # TAB 4: Food Calorie Lookup
 # ----------------------------
 with tab4:
     st.header("Food Calorie Lookup (USDA API)")
 
-    food_query = st.text_input("Search for a food (e.g., apple, chicken, rice)", key="food_query")
-    grams = st.number_input("Enter amount (grams)", min_value=1, step=1, key="food_weight")
+    food_query = st.text_input("Search for a food (e.g., egg, chicken, rice)", key="food_query")
 
-    if st.button("Get Calories"):
-        import streamlit as st
-        api_key = st.secrets["USDA_API_KEY"]
-        url = f"https://api.nal.usda.gov/fdc/v1/foods/search?query={food_query}&pageSize=5&api_key={api_key}"
+    if food_query:
+        api_key = st.secrets["USDA_API_KEY"]  # secure key from Streamlit secrets
+        url = f"https://api.nal.usda.gov/fdc/v1/foods/search?query={food_query}&pageSize=10&api_key={api_key}"
 
         try:
             response = requests.get(url)
@@ -201,22 +198,54 @@ with tab4:
             if "foods" not in data or len(data["foods"]) == 0:
                 st.error("No results found. Try another food.")
             else:
-                # Show top 5 matches as a selectbox
+                # Build dropdown with top matches
                 food_names = [f["description"] for f in data["foods"]]
                 selected_food = st.selectbox("Select a match", food_names)
 
-                # Find selected food's nutrients
-                chosen = next(f for f in data["foods"] if f["description"] == selected_food)
-                nutrients = {n["nutrientName"]: n["value"] for n in chosen["foodNutrients"]}
+                grams = st.number_input("Enter amount (grams)", min_value=1, step=1, key="food_weight")
 
-                # Calories per 100g
-                calories_per_100g = nutrients.get("Energy", None)
+                if st.button("Get Nutrition Info"):
+                    chosen = next(f for f in data["foods"] if f["description"] == selected_food)
 
-                if calories_per_100g:
-                    total_calories = (calories_per_100g * grams) / 100
-                    st.success(f"{grams} g of {selected_food} ≈ **{total_calories:.1f} calories**")
-                else:
-                    st.error("Calories not found for this food.")
+                    # Extract nutrients
+                    nutrients = {n["nutrientName"]: n["value"] for n in chosen.get("foodNutrients", [])}
+
+                    calories = nutrients.get("Energy", None)
+                    protein = nutrients.get("Protein", 0)
+                    fat = nutrients.get("Total lipid (fat)", 0)
+                    carbs = nutrients.get("Carbohydrate, by difference", 0)
+
+                    if calories:
+                        # Scale by grams (values are usually per 100g)
+                        scale = grams / 100
+                        total_calories = calories * scale
+                        total_protein = protein * scale
+                        total_fat = fat * scale
+                        total_carbs = carbs * scale
+
+                        st.success(f"**{grams} g of {selected_food}:**")
+                        st.write(f"Calories: **{total_calories:.1f} kcal**")
+
+                        # Show macros as text
+                        st.write(f"Protein: **{total_protein:.1f} g**")
+                        st.write(f"Fat: **{total_fat:.1f} g**")
+                        st.write(f"Carbs: **{total_carbs:.1f} g**")
+
+                        # Pie chart of macros
+                        labels = ["Protein", "Fat", "Carbs"]
+                        values = [total_protein, total_fat, total_carbs]
+                        colors = ["#4CAF50", "#FF9800", "#2196F3"]
+
+                        fig, ax = plt.subplots()
+                        ax.pie(values, labels=labels, autopct="%.1f%%", colors=colors, startangle=90)
+                        ax.set_title("Macronutrient Breakdown")
+                        st.pyplot(fig)
+
+                    else:
+                        st.warning("⚠️ No calorie info available for this food. Try another search.")
+
         except Exception as e:
             st.error(f"Error fetching data: {e}")
+
+
 
